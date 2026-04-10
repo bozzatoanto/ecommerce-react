@@ -50,17 +50,3 @@ Este proyecto fue desarrollado como práctica para fortalecer conocimientos de d
 - Estructuración de interfaces
 - Experiencia de usuario en una interfaz e-commerce
 
-## Instalación y uso
-
-1. Clonar el repositorio
-```bash
-git clone URL_DEL_REPOSITORIO
-
-2. Entrar a la carpeta del proyecto
-cd ecommerce-react
-
-3. Instalar dependencias
-npm install
-
-4. Ejecutar el proyecto
-npm run dev
