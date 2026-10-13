@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "nombre": "Remera Essential",
+    "descripcion": "Remera unisex de algodon, calce relajado y cuello redondo.",
+    "categoria": "Remeras",
+    "precio": 24900,
+    "stock": 14,
+    "imagen": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 2,
+    "nombre": "Remera Oversize",
+    "descripcion": "Remera oversize de algodon pesado con caida amplia.",
+    "categoria": "Remeras",
+    "precio": 28900,
+    "stock": 10,
+    "imagen": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 3,
+    "nombre": "Buzo Urban",
+    "descripcion": "Buzo con capucha, interior frisado y bolsillo frontal.",
+    "categoria": "Buzos",
+    "precio": 58900,
+    "stock": 8,
+    "imagen": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 4,
+    "nombre": "Buzo Crew",
+    "descripcion": "Buzo cuello redondo de corte clasico y terminaciones rib.",
+    "categoria": "Buzos",
+    "precio": 51900,
+    "stock": 6,
+    "imagen": "https://images.unsplash.com/photo-1578681994506-b8f463449011?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 5,
+    "nombre": "Jean Straight",
+    "descripcion": "Jean tiro medio de pierna recta y lavado azul medio.",
+    "categoria": "Pantalones",
+    "precio": 64900,
+    "stock": 9,
+    "imagen": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 6,
+    "nombre": "Cargo Black",
+    "descripcion": "Pantalon cargo negro con bolsillos laterales y calce relajado.",
+    "categoria": "Pantalones",
+    "precio": 69900,
+    "stock": 7,
+    "imagen": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 7,
+    "nombre": "Gorra Basic",
+    "descripcion": "Gorra regulable de seis paneles con bordado minimalista.",
+    "categoria": "Accesorios",
+    "precio": 19900,
+    "stock": 18,
+    "imagen": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  },
+  {
+    "id": 8,
+    "nombre": "Tote Canvas",
+    "descripcion": "Bolso de lona reforzada con asas largas y gran capacidad.",
+    "categoria": "Accesorios",
+    "precio": 22900,
+    "stock": 12,
+    "imagen": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=900&q=80",
+    "disponible": true
+  }
+]
