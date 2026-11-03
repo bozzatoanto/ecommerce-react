@@ -1,0 +1,81 @@
+.header-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-button {
+  padding: 10px 12px;
+  background: transparent;
+  color: #151515;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 6px;
+  border-right: 1px solid #d8d3cb;
+}
+
+.user-menu span {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.user-menu button {
+  padding: 6px 0;
+  background: transparent;
+  color: #817a73;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.auth-modal {
+  width: min(520px, 100%);
+}
+
+.auth-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 28px;
+  border-bottom: 1px solid #d8d3cb;
+}
+
+.auth-switch button {
+  min-height: 42px;
+  background: transparent;
+  color: #8a837c;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.auth-switch button.active {
+  color: #151515;
+  border-bottom-color: #151515;
+}
+
+@media (max-width: 720px) {
+  .header-actions {
+    gap: 2px;
+  }
+
+  .account-button,
+  .cart-button {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .user-menu {
+    display: none;
+  }
+}
