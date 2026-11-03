@@ -5,14 +5,11 @@ import { formatearPrecio } from "../utils/formato.js";
 export default function CheckoutModal({
   abierto,
   carrito,
+  usuario,
   onCerrar,
   onCompraConfirmada
 }) {
-  const [formulario, setFormulario] = useState({
-    nombre: "",
-    email: "",
-    direccion: ""
-  });
+  const [direccion, setDireccion] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [orden, setOrden] = useState(null);
@@ -22,13 +19,8 @@ export default function CheckoutModal({
     [carrito]
   );
 
-  function cambiarCampo(evento) {
-    const { name, value } = evento.target;
-    setFormulario((actual) => ({ ...actual, [name]: value }));
-  }
-
   function cerrar() {
-    setFormulario({ nombre: "", email: "", direccion: "" });
+    setDireccion("");
     setError("");
     setOrden(null);
     onCerrar();
@@ -41,7 +33,8 @@ export default function CheckoutModal({
 
     try {
       const respuesta = await crearOrden({
-        usuario: formulario,
+        id_usuario: usuario.id,
+        direccion,
         productos: carrito.map((item) => ({
           id: item.id,
           cantidad: item.cantidad
@@ -56,7 +49,7 @@ export default function CheckoutModal({
     }
   }
 
-  if (!abierto) {
+  if (!abierto || !usuario) {
     return null;
   }
 
@@ -84,39 +77,18 @@ export default function CheckoutModal({
             <div className="checkout-heading">
               <span className="eyebrow">Ultimo paso</span>
               <h2>Finalizar compra</h2>
-              <p>Completa tus datos para generar la orden.</p>
+              <p>
+                Compra asociada a {usuario.nombre} {usuario.apellido} · {usuario.email}
+              </p>
             </div>
 
             <form className="checkout-form" onSubmit={enviarCompra}>
               <label>
-                Nombre y apellido
-                <input
-                  type="text"
-                  name="nombre"
-                  value={formulario.nombre}
-                  onChange={cambiarCampo}
-                  required
-                />
-              </label>
-
-              <label>
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  value={formulario.email}
-                  onChange={cambiarCampo}
-                  required
-                />
-              </label>
-
-              <label>
                 Direccion de entrega
                 <input
                   type="text"
-                  name="direccion"
-                  value={formulario.direccion}
-                  onChange={cambiarCampo}
+                  value={direccion}
+                  onChange={(evento) => setDireccion(evento.target.value)}
                   required
                 />
               </label>
