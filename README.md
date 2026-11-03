@@ -1,17 +1,29 @@
 # NOMA Ecommerce - Aplicaciones Web II
 
-Tercera entrega de Aplicaciones Web II. El proyecto reutiliza el ecommerce de indumentaria desarrollado previamente en React y lo conecta con un servidor Express.js dentro del mismo repositorio.
+**Autora: Antonella Bozzato**
 
-## Modelo elegido
+Proyecto de e-commerce de indumentaria desarrollado para Aplicaciones Web II. La aplicación utiliza una estructura monorepo con frontend en React y backend en Express.js.
 
-Se utiliza un esquema monorepo:
+## Estructuras de datos
+
+El proyecto trabaja con tres estructuras JSON relacionadas:
+
+- `usuarios.json`
+- `productos.json`
+- `ordenes.json`
+
+Las órdenes guardan `id_usuario` para relacionar cada compra con un usuario registrado y `id_producto` para relacionar los productos comprados con el catálogo.
+
+## Estructura del proyecto
 
 ```text
 backend/
   data/
+    usuarios.json
     productos.json
     ordenes.json
   servidor.mjs
+
 src/
   components/
   pages/
@@ -20,23 +32,22 @@ src/
   utils/
 ```
 
-El frontend está desarrollado con React y Vite. El backend utiliza Express.js y archivos JSON como persistencia de datos.
-
 ## Funcionalidades
 
-- Listado de todos los productos disponibles.
-- Filtro de productos por categoría.
+- Listado de productos.
+- Filtro por categoría.
 - Buscador de productos.
 - Vista individual de producto.
-- Carrito de compras lateral.
-- Aumento y disminución de cantidades.
-- Eliminación de productos del carrito.
-- Persistencia del carrito mediante localStorage.
-- Formulario de checkout con datos del usuario.
-- Generación de órdenes de compra mediante una solicitud POST al backend.
-- Validación de stock en el servidor.
-- Actualización de stock después de confirmar una compra.
-- Registro de las órdenes generadas en `backend/data/ordenes.json`.
+- Carrito con persistencia en localStorage.
+- Registro de usuarios.
+- Inicio y cierre de sesión.
+- Validación de email y contraseña.
+- Contraseñas almacenadas mediante hash con bcrypt.
+- Checkout asociado al usuario autenticado.
+- Creación de órdenes desde el frontend.
+- Validación de stock.
+- Actualización de stock luego de una compra.
+- Persistencia de órdenes en JSON.
 
 ## Instalación
 
@@ -46,7 +57,7 @@ npm install
 
 ## Ejecución
 
-Para iniciar frontend y backend al mismo tiempo:
+Frontend y backend:
 
 ```bash
 npm run dev:full
@@ -64,34 +75,56 @@ Backend:
 http://localhost:3000
 ```
 
-También se pueden ejecutar por separado:
+También pueden ejecutarse por separado:
 
 ```bash
 npm run server
 npm run dev
 ```
 
-## Rutas del backend
+## Rutas
 
 | Método | Ruta | Función |
 | --- | --- | --- |
-| GET | `/api` | Información general de la API |
+| GET | `/api` | Información de la API |
 | GET | `/api/productos` | Lista todos los productos |
 | GET | `/api/productos?categoria=Remeras` | Filtra productos por categoría |
 | GET | `/api/productos/:id` | Obtiene un producto por ID |
-| GET | `/api/categorias` | Lista las categorías disponibles |
-| GET | `/api/ordenes/:id` | Consulta una orden por ID |
-| POST | `/api/ordenes` | Genera una nueva orden de compra |
+| GET | `/api/categorias` | Lista las categorías |
+| GET | `/api/usuarios/:id` | Obtiene un usuario sin exponer la contraseña |
+| POST | `/api/usuarios/registro` | Registra un usuario y hashea su contraseña |
+| POST | `/api/usuarios/login` | Valida email y contraseña |
+| GET | `/api/ordenes/:id` | Consulta una orden |
+| POST | `/api/ordenes` | Genera una orden vinculada a un usuario |
 
-## Ejemplo de compra
+## Registro de usuario
 
 ```json
 {
-  "usuario": {
-    "nombre": "Cliente Ejemplo",
-    "email": "cliente@email.com",
-    "direccion": "Calle 123"
-  },
+  "nombre": "Lucia",
+  "apellido": "Fernandez",
+  "email": "lucia@email.com",
+  "contrasena": "lucia123"
+}
+```
+
+La contraseña no se guarda en texto plano. El backend utiliza bcrypt para generar el hash antes de almacenar el usuario.
+
+## Inicio de sesión
+
+```json
+{
+  "email": "lucia@email.com",
+  "contrasena": "lucia123"
+}
+```
+
+## Generar una orden
+
+```json
+{
+  "id_usuario": 1,
+  "direccion": "Calle 123, Cordoba",
   "productos": [
     {
       "id": 1,
@@ -105,7 +138,7 @@ npm run dev
 }
 ```
 
-El servidor obtiene los precios desde el catálogo, valida el stock, calcula el total, genera el ID de la orden y guarda la compra.
+El servidor valida que el usuario exista, verifica el stock de los productos, calcula el total, genera la orden y actualiza el stock.
 
 ## Tecnologías
 
@@ -116,5 +149,6 @@ El servidor obtiene los precios desde el catálogo, valida el stock, calcula el 
 - Vite
 - Node.js
 - Express.js
+- bcrypt
 - localStorage
 - JSON
