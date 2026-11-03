@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
+import bcrypt from "bcryptjs";
 import { readFile, writeFile } from "node:fs/promises";
 
 const app = express();
 const puerto = 3000;
 const productosRuta = new URL("./data/productos.json", import.meta.url);
 const ordenesRuta = new URL("./data/ordenes.json", import.meta.url);
+const usuariosRuta = new URL("./data/usuarios.json", import.meta.url);
 
 app.use(cors());
 app.use(express.json());
@@ -19,11 +21,24 @@ async function escribirJson(ruta, datos) {
   await writeFile(ruta, JSON.stringify(datos, null, 2) + "\n", "utf-8");
 }
 
+function usuarioPublico(usuario) {
+  const { contrasena, ...datos } = usuario;
+  return datos;
+}
+
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 app.get("/api", (req, res) => {
   res.json({
     proyecto: "Ecommerce de indumentaria",
+    autora: "Antonella Bozzato",
     productos: "/api/productos",
     categorias: "/api/categorias",
+    usuarios: "/api/usuarios/:id",
+    registro: "/api/usuarios/registro",
+    login: "/api/usuarios/login",
     ordenes: "/api/ordenes"
   });
 });
@@ -72,6 +87,113 @@ app.get("/api/categorias", async (req, res) => {
   }
 });
 
+app.get("/api/usuarios/:id", async (req, res) => {
+  try {
+    const usuarios = await leerJson(usuariosRuta);
+    const usuario = usuarios.find((item) => item.id === Number(req.params.id));
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(usuarioPublico(usuario));
+  } catch {
+    res.status(500).json({ error: "No se pudo obtener el usuario" });
+  }
+});
+
+app.post("/api/usuarios/registro", async (req, res) => {
+  try {
+    const { nombre, apellido, email, contrasena } = req.body;
+
+    if (!nombre?.trim() || !apellido?.trim() || !email?.trim() || !contrasena) {
+      return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+
+    if (!emailValido(email)) {
+      return res.status(400).json({ error: "El email no es valido" });
+    }
+
+    if (contrasena.length < 6) {
+      return res.status(400).json({
+        error: "La contrasena debe tener al menos 6 caracteres"
+      });
+    }
+
+    const usuarios = await leerJson(usuariosRuta);
+    const emailNormalizado = email.trim().toLowerCase();
+
+    if (usuarios.some((usuario) => usuario.email === emailNormalizado)) {
+      return res.status(409).json({ error: "El email ya esta registrado" });
+    }
+
+    const id = usuarios.length
+      ? Math.max(...usuarios.map((usuario) => usuario.id)) + 1
+      : 1;
+
+    const contrasenaHash = await bcrypt.hash(contrasena, 10);
+
+    const nuevoUsuario = {
+      id,
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      email: emailNormalizado,
+      contrasena: contrasenaHash,
+      activo: true,
+      fechaRegistro: new Date().toISOString()
+    };
+
+    usuarios.push(nuevoUsuario);
+    await escribirJson(usuariosRuta, usuarios);
+
+    res.status(201).json({
+      mensaje: "Usuario registrado correctamente",
+      usuario: usuarioPublico(nuevoUsuario)
+    });
+  } catch {
+    res.status(500).json({ error: "No se pudo registrar el usuario" });
+  }
+});
+
+app.post("/api/usuarios/login", async (req, res) => {
+  try {
+    const { email, contrasena } = req.body;
+
+    if (!email?.trim() || !contrasena) {
+      return res.status(400).json({ error: "Email y contrasena son obligatorios" });
+    }
+
+    const usuarios = await leerJson(usuariosRuta);
+    const usuario = usuarios.find(
+      (item) => item.email === email.trim().toLowerCase()
+    );
+
+    if (!usuario) {
+      return res.status(401).json({ error: "Credenciales incorrectas" });
+    }
+
+    const contrasenaCorrecta = await bcrypt.compare(
+      contrasena,
+      usuario.contrasena
+    );
+
+    if (!contrasenaCorrecta) {
+      return res.status(401).json({ error: "Credenciales incorrectas" });
+    }
+
+    if (!usuario.activo) {
+      return res.status(403).json({ error: "Usuario inactivo" });
+    }
+
+    res.json({
+      mensaje: "Inicio de sesion correcto",
+      usuario: usuarioPublico(usuario)
+    });
+  } catch {
+    res.status(500).json({ error: "No se pudo iniciar sesion" });
+  }
+});
+
 app.get("/api/ordenes/:id", async (req, res) => {
   try {
     const ordenes = await leerJson(ordenesRuta);
@@ -89,22 +211,30 @@ app.get("/api/ordenes/:id", async (req, res) => {
 
 app.post("/api/ordenes", async (req, res) => {
   try {
-    const { usuario, productos } = req.body;
+    const { id_usuario, direccion, productos } = req.body;
 
     if (
-      !usuario?.nombre ||
-      !usuario?.email ||
-      !usuario?.direccion ||
+      !Number.isInteger(Number(id_usuario)) ||
+      !direccion?.trim() ||
       !Array.isArray(productos) ||
       productos.length === 0
     ) {
       return res.status(400).json({ error: "Datos de compra incompletos" });
     }
 
-    const [catalogo, ordenes] = await Promise.all([
+    const [catalogo, ordenes, usuarios] = await Promise.all([
       leerJson(productosRuta),
-      leerJson(ordenesRuta)
+      leerJson(ordenesRuta),
+      leerJson(usuariosRuta)
     ]);
+
+    const usuario = usuarios.find(
+      (item) => item.id === Number(id_usuario) && item.activo
+    );
+
+    if (!usuario) {
+      return res.status(400).json({ error: "El usuario no existe o esta inactivo" });
+    }
 
     const detalle = [];
     let total = 0;
@@ -127,7 +257,7 @@ app.post("/api/ordenes", async (req, res) => {
       total += subtotal;
 
       detalle.push({
-        id: producto.id,
+        id_producto: producto.id,
         nombre: producto.nombre,
         precio: producto.precio,
         cantidad,
@@ -136,20 +266,19 @@ app.post("/api/ordenes", async (req, res) => {
     }
 
     for (const item of detalle) {
-      const producto = catalogo.find((registro) => registro.id === item.id);
+      const producto = catalogo.find(
+        (registro) => registro.id === item.id_producto
+      );
       producto.stock -= item.cantidad;
       producto.disponible = producto.stock > 0;
     }
 
     const orden = {
       id: `ORD-${Date.now()}`,
+      id_usuario: usuario.id,
       fecha: new Date().toISOString(),
       estado: "confirmada",
-      usuario: {
-        nombre: usuario.nombre,
-        email: usuario.email,
-        direccion: usuario.direccion
-      },
+      direccion: direccion.trim(),
       productos: detalle,
       total
     };
