@@ -26,6 +26,30 @@ export async function obtenerCategorias() {
   return procesarRespuesta(respuesta);
 }
 
+export async function registrarUsuario(datos) {
+  const respuesta = await fetch("/api/usuarios/registro", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(datos)
+  });
+
+  return procesarRespuesta(respuesta);
+}
+
+export async function iniciarSesion(datos) {
+  const respuesta = await fetch("/api/usuarios/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(datos)
+  });
+
+  return procesarRespuesta(respuesta);
+}
+
 export async function crearOrden(datos) {
   const respuesta = await fetch("/api/ordenes", {
     method: "POST",
