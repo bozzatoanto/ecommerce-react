@@ -1,7 +1,8 @@
 {
   "name": "ecommerce-react",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "author": "Antonella Bozzato",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "react": "^19.2.4",
