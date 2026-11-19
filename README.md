@@ -2,27 +2,35 @@
 
 **Autora: Antonella Bozzato**
 
-Proyecto de e-commerce de indumentaria desarrollado para Aplicaciones Web II. La aplicación utiliza una estructura monorepo con frontend en React y backend en Express.js.
+Proyecto de e-commerce de indumentaria desarrollado para Aplicaciones Web II.
 
-## Estructuras de datos
+La cuarta entrega incorpora persistencia con MongoDB, operaciones CRUD con Mongoose y autenticación de usuarios mediante JWT y bcrypt.
 
-El proyecto trabaja con tres estructuras JSON relacionadas:
+## Arquitectura
 
-- `usuarios.json`
-- `productos.json`
-- `ordenes.json`
-
-Las órdenes guardan `id_usuario` para relacionar cada compra con un usuario registrado y `id_producto` para relacionar los productos comprados con el catálogo.
-
-## Estructura del proyecto
+El proyecto utiliza una estructura monorepo:
 
 ```text
 backend/
+  db/
+    actions/
+      order.actions.js
+      product.actions.js
+      user.actions.js
+    schemas/
+      order.schema.js
+      product.schema.js
+      user.schema.js
+    connection.js
+  routes/
+    orders.routes.js
+    products.routes.js
+    users.routes.js
   data/
-    usuarios.json
     productos.json
-    ordenes.json
-  servidor.mjs
+  index.js
+  middlewares.js
+  migrar.js
 
 src/
   components/
@@ -32,28 +40,66 @@ src/
   utils/
 ```
 
-## Funcionalidades
+El frontend está desarrollado con React y Vite. El servidor utiliza Express.js. La información se persiste en MongoDB mediante Mongoose.
 
-- Listado de productos.
-- Filtro por categoría.
-- Buscador de productos.
-- Vista individual de producto.
-- Carrito con persistencia en localStorage.
-- Registro de usuarios.
-- Inicio y cierre de sesión.
-- Validación de email y contraseña.
-- Contraseñas almacenadas mediante hash con bcrypt.
-- Checkout asociado al usuario autenticado.
-- Creación de órdenes desde el frontend.
-- Validación de stock.
-- Actualización de stock luego de una compra.
-- Persistencia de órdenes en JSON.
+## Tecnologías
+
+- React
+- React Router DOM
+- JavaScript
+- CSS
+- Vite
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcrypt
+- localStorage
+
+## Dependencias principales
+
+- `express`
+- `mongoose`
+- `jsonwebtoken`
+- `bcrypt`
+- `cors`
+- `react`
+- `react-dom`
+- `react-router-dom`
+
+## Configuración
+
+Crear un archivo `.env` en la raíz del proyecto usando como referencia `.env.example`.
+
+```text
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB=NOMA
+JWT_SECRET=TU_SECRET
+```
+
+`JWT_SECRET` debe reemplazarse por un valor propio y no debe subirse al repositorio.
 
 ## Instalación
 
 ```bash
 npm install
 ```
+
+## Migración inicial
+
+Los productos de la entrega anterior se mantienen en `backend/data/productos.json` únicamente como origen de la migración.
+
+Con MongoDB ejecutándose:
+
+```bash
+npm run migrate
+```
+
+Este comando crea los productos iniciales en MongoDB si la colección todavía está vacía.
+
+El funcionamiento normal de la aplicación no lee ni escribe archivos JSON.
 
 ## Ejecución
 
@@ -75,29 +121,51 @@ Backend:
 http://localhost:3000
 ```
 
-También pueden ejecutarse por separado:
+## MongoDB
 
-```bash
-npm run server
-npm run dev
+Se utilizan tres esquemas principales:
+
+### Usuario
+
+- nombre
+- apellido
+- email
+- contrasena
+- activo
+
+La contraseña se almacena encriptada mediante bcrypt.
+
+### Producto
+
+- nombre
+- descripcion
+- categoria
+- precio
+- stock
+- imagen
+- disponible
+
+### Orden
+
+- usuario
+- direccion
+- productos
+- total
+- estado
+
+El campo `usuario` referencia al esquema de usuarios.
+
+Cada elemento de `productos` contiene una referencia al esquema de productos.
+
+Las consultas de órdenes utilizan `populate` para recuperar los datos relacionados.
+
+## Autenticación
+
+### Registro
+
+```http
+POST /api/usuarios/create
 ```
-
-## Rutas
-
-| Método | Ruta | Función |
-| --- | --- | --- |
-| GET | `/api` | Información de la API |
-| GET | `/api/productos` | Lista todos los productos |
-| GET | `/api/productos?categoria=Remeras` | Filtra productos por categoría |
-| GET | `/api/productos/:id` | Obtiene un producto por ID |
-| GET | `/api/categorias` | Lista las categorías |
-| GET | `/api/usuarios/:id` | Obtiene un usuario sin exponer la contraseña |
-| POST | `/api/usuarios/registro` | Registra un usuario y hashea su contraseña |
-| POST | `/api/usuarios/login` | Valida email y contraseña |
-| GET | `/api/ordenes/:id` | Consulta una orden |
-| POST | `/api/ordenes` | Genera una orden vinculada a un usuario |
-
-## Registro de usuario
 
 ```json
 {
@@ -108,9 +176,13 @@ npm run dev
 }
 ```
 
-La contraseña no se guarda en texto plano. El backend utiliza bcrypt para generar el hash antes de almacenar el usuario.
+Antes de guardar el usuario, bcrypt genera el hash de la contraseña.
 
-## Inicio de sesión
+### Login
+
+```http
+POST /api/usuarios/login
+```
 
 ```json
 {
@@ -119,36 +191,57 @@ La contraseña no se guarda en texto plano. El backend utiliza bcrypt para gener
 }
 ```
 
-## Generar una orden
+Si las credenciales son correctas, el servidor devuelve un JWT.
 
-```json
-{
-  "id_usuario": 1,
-  "direccion": "Calle 123, Cordoba",
-  "productos": [
-    {
-      "id": 1,
-      "cantidad": 2
-    },
-    {
-      "id": 7,
-      "cantidad": 1
-    }
-  ]
-}
+El frontend guarda la sesión y utiliza el token para realizar una compra.
+
+## Ruta protegida
+
+La creación de una orden requiere:
+
+```text
+Authorization: Bearer TOKEN
 ```
 
-El servidor valida que el usuario exista, verifica el stock de los productos, calcula el total, genera la orden y actualiza el stock.
+El middleware verifica el token mediante `jwt.verify`.
 
-## Tecnologías
+## CRUD de productos
 
-- React
-- React Router DOM
-- JavaScript
-- CSS
-- Vite
-- Node.js
-- Express.js
-- bcrypt
-- localStorage
-- JSON
+| Operación | Método | Ruta |
+| --- | --- | --- |
+| Create | POST | `/api/productos/create` |
+| Read | GET | `/api/productos/all` |
+| Read por ID | GET | `/api/productos/byId/:id` |
+| Read por categoría | GET | `/api/productos/byCategory/:categoria` |
+| Update | PUT | `/api/productos/update/:id` |
+| Delete | DELETE | `/api/productos/delete/:id` |
+
+## Órdenes
+
+| Método | Ruta | Protección |
+| --- | --- | --- |
+| GET | `/api/ordenes/all` | JWT |
+| GET | `/api/ordenes/byId/:id` | JWT |
+| POST | `/api/ordenes/create` | JWT |
+| PUT | `/api/ordenes/update/:id` | JWT |
+| DELETE | `/api/ordenes/delete/:id` | JWT |
+
+## Funcionalidades del frontend
+
+- Listado de productos desde MongoDB.
+- Filtro por categoría.
+- Buscador.
+- Detalle de producto.
+- Carrito persistido en localStorage.
+- Registro de usuario.
+- Login.
+- Sesión persistida.
+- Compra protegida mediante JWT.
+- Creación de orden en MongoDB.
+- Actualización de stock después de comprar.
+
+## Documentación de entrega
+
+- `ENTREGA_TP4.md`
+- `PRUEBAS_POSTMAN.md`
+- `GUIA_VIDEO_TP4.md`
