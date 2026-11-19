@@ -9,7 +9,7 @@ import Products from "./pages/Products.jsx";
 import ProductDetail from "./pages/ProductDetail.jsx";
 
 const CART_STORAGE_KEY = "noma-cart";
-const USER_STORAGE_KEY = "noma-user";
+const SESSION_STORAGE_KEY = "noma-session";
 
 function cargarStorage(clave, valorInicial) {
   try {
@@ -20,29 +20,36 @@ function cargarStorage(clave, valorInicial) {
   }
 }
 
+function obtenerId(item) {
+  return item._id || item.id;
+}
+
 export default function App() {
   const [carrito, setCarrito] = useState(() =>
     cargarStorage(CART_STORAGE_KEY, [])
   );
-  const [usuario, setUsuario] = useState(() =>
-    cargarStorage(USER_STORAGE_KEY, null)
+  const [sesion, setSesion] = useState(() =>
+    cargarStorage(SESSION_STORAGE_KEY, null)
   );
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [checkoutAbierto, setCheckoutAbierto] = useState(false);
   const [authAbierto, setAuthAbierto] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
+  const usuario = sesion?.usuario || null;
+  const token = sesion?.token || null;
+
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(carrito));
   }, [carrito]);
 
   useEffect(() => {
-    if (usuario) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usuario));
+    if (sesion) {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sesion));
     } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
-  }, [usuario]);
+  }, [sesion]);
 
   const cantidadTotal = useMemo(
     () => carrito.reduce((total, item) => total + item.cantidad, 0),
@@ -55,13 +62,20 @@ export default function App() {
   }
 
   function agregarAlCarrito(producto) {
+    const idProducto = obtenerId(producto);
+
     setCarrito((actual) => {
-      const existente = actual.find((item) => item.id === producto.id);
+      const existente = actual.find(
+        (item) => obtenerId(item) === idProducto
+      );
 
       if (existente) {
         return actual.map((item) =>
-          item.id === producto.id
-            ? { ...item, cantidad: Math.min(item.cantidad + 1, producto.stock) }
+          obtenerId(item) === idProducto
+            ? {
+                ...item,
+                cantidad: Math.min(item.cantidad + 1, producto.stock)
+              }
             : item
         );
       }
@@ -75,21 +89,26 @@ export default function App() {
   function cambiarCantidad(id, cantidad) {
     setCarrito((actual) =>
       actual.map((item) =>
-        item.id === id
-          ? { ...item, cantidad: Math.max(1, Math.min(cantidad, item.stock)) }
+        obtenerId(item) === id
+          ? {
+              ...item,
+              cantidad: Math.max(1, Math.min(cantidad, item.stock))
+            }
           : item
       )
     );
   }
 
   function eliminarDelCarrito(id) {
-    setCarrito((actual) => actual.filter((item) => item.id !== id));
+    setCarrito((actual) =>
+      actual.filter((item) => obtenerId(item) !== id)
+    );
   }
 
   function abrirCheckout() {
     setCarritoAbierto(false);
 
-    if (!usuario) {
+    if (!sesion) {
       mostrarMensaje("Inicia sesion para finalizar la compra");
       setAuthAbierto(true);
       return;
@@ -102,13 +121,13 @@ export default function App() {
     setCarrito([]);
   }
 
-  function autenticarUsuario(datosUsuario) {
-    setUsuario(datosUsuario);
-    mostrarMensaje(`Hola, ${datosUsuario.nombre}`);
+  function autenticarUsuario(datosSesion) {
+    setSesion(datosSesion);
+    mostrarMensaje(`Hola, ${datosSesion.usuario.nombre}`);
   }
 
   function cerrarSesion() {
-    setUsuario(null);
+    setSesion(null);
     setCheckoutAbierto(false);
     mostrarMensaje("Sesion cerrada");
   }
@@ -126,8 +145,14 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home onAgregar={agregarAlCarrito} />} />
-          <Route path="/productos" element={<Products onAgregar={agregarAlCarrito} />} />
-          <Route path="/producto/:id" element={<ProductDetail onAgregar={agregarAlCarrito} />} />
+          <Route
+            path="/productos"
+            element={<Products onAgregar={agregarAlCarrito} />}
+          />
+          <Route
+            path="/producto/:id"
+            element={<ProductDetail onAgregar={agregarAlCarrito} />}
+          />
         </Routes>
       </main>
 
@@ -144,6 +169,7 @@ export default function App() {
         abierto={checkoutAbierto}
         carrito={carrito}
         usuario={usuario}
+        token={token}
         onCerrar={() => setCheckoutAbierto(false)}
         onCompraConfirmada={compraConfirmada}
       />
