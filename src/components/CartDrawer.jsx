@@ -1,5 +1,9 @@
 import { formatearPrecio } from "../utils/formato.js";
 
+function obtenerId(item) {
+  return item._id || item.id;
+}
+
 export default function CartDrawer({
   abierto,
   carrito,
@@ -26,7 +30,11 @@ export default function CartDrawer({
             <span className="eyebrow">Tu seleccion</span>
             <h2>Carrito</h2>
           </div>
-          <button className="icon-button" onClick={onCerrar} aria-label="Cerrar carrito">
+          <button
+            className="icon-button"
+            onClick={onCerrar}
+            aria-label="Cerrar carrito"
+          >
             ×
           </button>
         </div>
@@ -40,40 +48,48 @@ export default function CartDrawer({
               </button>
             </div>
           ) : (
-            carrito.map((item) => (
-              <article className="cart-item" key={item.id}>
-                <img src={item.imagen} alt={item.nombre} />
-                <div className="cart-item-info">
-                  <div className="cart-item-top">
-                    <div>
-                      <h3>{item.nombre}</h3>
-                      <p>{formatearPrecio(item.precio)}</p>
-                    </div>
-                    <button
-                      className="remove-button"
-                      onClick={() => onEliminar(item.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+            carrito.map((item) => {
+              const id = obtenerId(item);
 
-                  <div className="quantity-control">
-                    <button
-                      onClick={() => onCambiarCantidad(item.id, item.cantidad - 1)}
-                    >
-                      −
-                    </button>
-                    <span>{item.cantidad}</span>
-                    <button
-                      onClick={() => onCambiarCantidad(item.id, item.cantidad + 1)}
-                      disabled={item.cantidad >= item.stock}
-                    >
-                      +
-                    </button>
+              return (
+                <article className="cart-item" key={id}>
+                  <img src={item.imagen} alt={item.nombre} />
+                  <div className="cart-item-info">
+                    <div className="cart-item-top">
+                      <div>
+                        <h3>{item.nombre}</h3>
+                        <p>{formatearPrecio(item.precio)}</p>
+                      </div>
+                      <button
+                        className="remove-button"
+                        onClick={() => onEliminar(id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+
+                    <div className="quantity-control">
+                      <button
+                        onClick={() =>
+                          onCambiarCantidad(id, item.cantidad - 1)
+                        }
+                      >
+                        −
+                      </button>
+                      <span>{item.cantidad}</span>
+                      <button
+                        onClick={() =>
+                          onCambiarCantidad(id, item.cantidad + 1)
+                        }
+                        disabled={item.cantidad >= item.stock}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           )}
         </div>
 
@@ -83,7 +99,10 @@ export default function CartDrawer({
               <span>Total</span>
               <strong>{formatearPrecio(total)}</strong>
             </div>
-            <button className="primary-button full-width" onClick={onCheckout}>
+            <button
+              className="primary-button full-width"
+              onClick={onCheckout}
+            >
               Finalizar compra
             </button>
           </div>
