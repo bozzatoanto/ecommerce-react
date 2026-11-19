@@ -6,6 +6,7 @@ export default function CheckoutModal({
   abierto,
   carrito,
   usuario,
+  token,
   onCerrar,
   onCompraConfirmada
 }) {
@@ -15,7 +16,11 @@ export default function CheckoutModal({
   const [orden, setOrden] = useState(null);
 
   const total = useMemo(
-    () => carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0),
+    () =>
+      carrito.reduce(
+        (suma, item) => suma + item.precio * item.cantidad,
+        0
+      ),
     [carrito]
   );
 
@@ -32,14 +37,17 @@ export default function CheckoutModal({
     setError("");
 
     try {
-      const respuesta = await crearOrden({
-        id_usuario: usuario.id,
-        direccion,
-        productos: carrito.map((item) => ({
-          id: item.id,
-          cantidad: item.cantidad
-        }))
-      });
+      const respuesta = await crearOrden(
+        {
+          direccion,
+          productos: carrito.map((item) => ({
+            producto: item._id || item.id,
+            cantidad: item.cantidad
+          }))
+        },
+        token
+      );
+
       setOrden(respuesta);
       onCompraConfirmada(respuesta);
     } catch (err) {
@@ -49,14 +57,18 @@ export default function CheckoutModal({
     }
   }
 
-  if (!abierto || !usuario) {
+  if (!abierto || !usuario || !token) {
     return null;
   }
 
   return (
     <div className="modal-backdrop">
       <section className="checkout-modal">
-        <button className="icon-button modal-close" onClick={cerrar} aria-label="Cerrar">
+        <button
+          className="icon-button modal-close"
+          onClick={cerrar}
+          aria-label="Cerrar"
+        >
           ×
         </button>
 
@@ -66,8 +78,10 @@ export default function CheckoutModal({
             <span className="eyebrow">Compra confirmada</span>
             <h2>Gracias por tu compra</h2>
             <p>Tu orden fue generada correctamente.</p>
-            <div className="order-number">{orden.id}</div>
-            <p className="success-total">Total: {formatearPrecio(orden.total)}</p>
+            <div className="order-number">{orden._id}</div>
+            <p className="success-total">
+              Total: {formatearPrecio(orden.total)}
+            </p>
             <button className="primary-button full-width" onClick={cerrar}>
               Volver a la tienda
             </button>
@@ -78,7 +92,8 @@ export default function CheckoutModal({
               <span className="eyebrow">Ultimo paso</span>
               <h2>Finalizar compra</h2>
               <p>
-                Compra asociada a {usuario.nombre} {usuario.apellido} · {usuario.email}
+                Compra asociada a {usuario.nombre} {usuario.apellido} ·{" "}
+                {usuario.email}
               </p>
             </div>
 
@@ -100,7 +115,10 @@ export default function CheckoutModal({
 
               {error && <p className="form-error">{error}</p>}
 
-              <button className="primary-button full-width" disabled={cargando}>
+              <button
+                className="primary-button full-width"
+                disabled={cargando}
+              >
                 {cargando ? "Generando orden..." : "Confirmar compra"}
               </button>
             </form>
