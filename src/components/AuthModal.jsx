@@ -32,21 +32,27 @@ export default function AuthModal({ abierto, onCerrar, onAutenticado }) {
     setError("");
 
     try {
-      const respuesta =
-        modo === "registro"
-          ? await registrarUsuario(formulario)
-          : await iniciarSesion({
-              email: formulario.email,
-              contrasena: formulario.contrasena
-            });
+      if (modo === "registro") {
+        await registrarUsuario(formulario);
+      }
 
-      onAutenticado(respuesta.usuario);
+      const respuesta = await iniciarSesion({
+        email: formulario.email,
+        contrasena: formulario.contrasena
+      });
+
+      onAutenticado({
+        usuario: respuesta.usuario,
+        token: respuesta.token
+      });
+
       setFormulario({
         nombre: "",
         apellido: "",
         email: "",
         contrasena: ""
       });
+
       onCerrar();
     } catch (err) {
       setError(err.message);
@@ -58,7 +64,11 @@ export default function AuthModal({ abierto, onCerrar, onAutenticado }) {
   return (
     <div className="modal-backdrop">
       <section className="checkout-modal auth-modal">
-        <button className="icon-button modal-close" onClick={onCerrar} aria-label="Cerrar">
+        <button
+          className="icon-button modal-close"
+          onClick={onCerrar}
+          aria-label="Cerrar"
+        >
           ×
         </button>
 
