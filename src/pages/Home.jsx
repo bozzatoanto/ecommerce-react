@@ -21,7 +21,8 @@ export default function Home({ onAgregar }) {
             <span className="eyebrow">Nueva temporada</span>
             <h1>Esenciales que combinan con todo.</h1>
             <p>
-              Prendas urbanas, simples y versatiles pensadas para usar todos los dias.
+              Prendas urbanas, simples y versatiles pensadas para usar todos
+              los dias.
             </p>
             <Link to="/productos" className="primary-link">
               Ver coleccion
@@ -67,7 +68,7 @@ export default function Home({ onAgregar }) {
           <div className="product-grid">
             {productos.map((producto) => (
               <ProductCard
-                key={producto.id}
+                key={producto._id || producto.id}
                 producto={producto}
                 onAgregar={onAgregar}
               />
@@ -80,7 +81,9 @@ export default function Home({ onAgregar }) {
         <div className="container editorial-content">
           <span className="eyebrow light">Compra simple</span>
           <h2>Elegis, sumas al carrito y generamos tu orden.</h2>
-          <p>Tu seleccion queda guardada aunque cierres o recargues la pagina.</p>
+          <p>
+            Tu seleccion queda guardada aunque cierres o recargues la pagina.
+          </p>
           <Link to="/productos" className="light-link">
             Explorar productos
           </Link>
