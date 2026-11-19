@@ -63,7 +63,9 @@ export default function Products({ onAgregar }) {
         {["Todos", ...categorias].map((item) => (
           <button
             key={item}
-            className={categoria === item ? "filter-button active" : "filter-button"}
+            className={
+              categoria === item ? "filter-button active" : "filter-button"
+            }
             onClick={() => setCategoria(item)}
           >
             {item}
@@ -81,12 +83,14 @@ export default function Products({ onAgregar }) {
       ) : error ? (
         <p className="state-message">{error}</p>
       ) : visibles.length === 0 ? (
-        <p className="state-message">No encontramos productos con ese filtro.</p>
+        <p className="state-message">
+          No encontramos productos con ese filtro.
+        </p>
       ) : (
         <div className="product-grid">
           {visibles.map((producto) => (
             <ProductCard
-              key={producto.id}
+              key={producto._id || producto.id}
               producto={producto}
               onAgregar={onAgregar}
             />
