@@ -77,7 +77,7 @@ El detalle de las pruebas se encuentra en:
 
 ## Video explicativo
 
-**Link al video:** PENDIENTE DE AGREGAR
+**Link al video:** [Ver Demo.mp4 en Google Drive](https://drive.google.com/drive/folders/1-j4ajAQhdNo1PPqHY6GFhtIfXV7Pt7yU?usp=sharing)
 
 El video debe mostrar la aplicación, las operaciones CRUD, autenticación, MongoDB, estructura del proyecto y pruebas mediante Postman.
 
